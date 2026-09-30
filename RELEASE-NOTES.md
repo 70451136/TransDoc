@@ -24,6 +24,8 @@ Windows 首次安装 Docker Desktop 并经过 UAC/重启的全过程、ARM64、�
 
 ## 安装与升级
 
+**复制即可下载并开始安装：[Windows / Linux 命令](https://github.com/70451136/TransDoc#下载并开始安装)**。Windows 进入一键流程；Linux 准备环境后仍需手动授权。命令校验固定附件 SHA256，遇到已有目录停止覆盖；`docker pull` 仅下载镜像，不是安装。这是文档更新，未替换本发行镜像或附件。
+
 Windows 下载 ZIP 后完整解压、运行 `Start.cmd`；Linux 依照 [INSTALL](INSTALL.md) 准备与手动激活。保留原配置、节点身份和数据卷。重装不是清空；升级前备份数据库、配置与文件，迁移后不承诺自动数据库降级。
 
 永久免费授权没有商业到期日，但需周期校验；第三方模型和基础设施费用不包含在内。详见 [README](README.md) 和 [SECURITY](SECURITY.md)。

@@ -20,6 +20,12 @@ TransDoc 不附赠第三方模型账户。可配置自己的云端密钥，也�
 
 原目录的修复/升级入口保留身份、密码和卷。Windows 可尝试恢复本机加密快照；完全丢失身份后无法可靠证明旧节点，不按邮箱猜测或接管授权。请备份身份和数据。
 
+## docker pull 成功，为何工作台仍打不开？
+
+`docker pull` 只下载镜像，没有创建完整服务。单独运行 Web 会报 `host not found in upstream "api"`；单独运行 runtime 也缺少数据库、配置与初始化。请使用 [下载并开始安装](README.md#下载并开始安装) 的命令，或下载 Windows 完整 ZIP 后双击 `Start.cmd`，不要把 Docker Desktop 的 Run 当作产品安装入口。
+
+安装脚本在失败时保留已有配置与数据。若你手动删除了 Docker 数据卷，重新下载镜像不能找回原数据库或上传文件，须从业务备份恢复；本机授权恢复记录只含配置，不是数据备份。
+
 ## 为什么不是一条 docker run？
 
 完整系统包括 Web、API、Worker、调度、续签、PostgreSQL 和 Redis，需要迁移与存储初始化。发行 Compose 和安装器统一处理这些步骤，避免缺服务和默认密码。
