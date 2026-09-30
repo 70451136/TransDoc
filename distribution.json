@@ -1,0 +1,30 @@
+{
+  "release": "0.2.1-r11",
+  "runtime": "transdoc520/transdoc-runtime@sha256:6283ae32af84607ec9b75165785760ab0531760fa51b945ab6eabbbcdc709814",
+  "web": "transdoc520/transdoc-web@sha256:fc03278635a761eebcadbbcd7dd29aa72c6502eb5ed692e23c253faccd87b8b7",
+  "sha256": {
+    ".gitattributes": "93699a1108fd9da226b06f84ee12e317f4ea4d2f18a8fd05260443fd1bf2faef",
+    ".github/ISSUE_TEMPLATE/bug_report.md": "f21b40be7784e8e3c2b435999d516fdd123b905703e05f55a867d78ca99ae25c",
+    ".github/ISSUE_TEMPLATE/feature_request.md": "55cf3ccc957f10312351cc5c7cef2cb9bd8cc6e8341d9aafeb007fc26356c150",
+    ".github/workflows/validate.yml": "3d965e5822707da5e8cbffbf811c8609c737cce84961d7d41605cce19e8010a5",
+    ".gitignore": "6605ec006672d0257cbe8f878e32ba293ee4a12359c9ef06e53e64df96041d08",
+    "assets/transdoc-hero.png": "3180ad5bbf310dab4132b32771b29135800693c07660f7b4c6369a9f1f601577",
+    "CONTRIBUTING.md": "edd7b21c9fec1af6f7db34b44e860fa80f7c715130a829e9f51d4884b37fb604",
+    "deploy/compose.yaml": "e3a22145e55432b5cf5f5fe969ba4f3480200044e82c648c938a4e7a52fae59b",
+    "deploy/images.env": "0f055f6c93d1450548f934a5932c90a9e97c6aa8cced8a38809fc4614743abbc",
+    "deploy/install-engine.sh": "7ecbd68c16a174173d1d1815446d8c0a98ff80b417d9a5e9d23c46ce2b5eb90e",
+    "deploy/install.ps1": "f5a7be26f701f7020aafc9ecdf1555904a804a82b5abc96f222c4a5a907914e5",
+    "deploy/install.sh": "e794d8cb0488a3a9778b8bff7e27fc9f2905a136766a90eb5b98c6be6ba38ddb",
+    "deploy/linux-common.sh": "1928066fb73f5cd071e986582a74eb26e69de1b21a39e90560d9b56354afd6ef",
+    "deploy/windows-common.ps1": "b4e8032379eafc1495625f7b0cca4ce09f97c7b9953bd0132434c8c6fdfd450a",
+    "deploy/windows-engine.ps1": "43206b5f028fa467e5d2ea2b7030080804696e7846d82ebb971fb2f07a7a7f52",
+    "deploy/windows-identity.ps1": "170ab0560543453bf092fa3448f298c7dad488a7c1c050b0150cb7373840eb92",
+    "deploy/windows-recovery.ps1": "21656c24399d856e15230ef49cdbda233f4bdf1b58d83a9c3921b5603ab30e20",
+    "FAQ.md": "57ce0080440658f989551fe833b6965a54b74b7afddf0c3ed4c84fa478369db1",
+    "INSTALL.md": "3f9c05bfa3d1b3717a9424576b337f1ecda1447d08cafe6726ff5011099a99dc",
+    "README.md": "486995fbd212613744afc2b2c9859369f466e41366e19af6128b6100446302e9",
+    "RELEASE-NOTES.md": "8a53b98a23504422bd00bb7abe672910280891a0629f36234827ff88dc6abecf",
+    "SECURITY.md": "30b8d974f9511184f7e3c93982cbcdfe636bc76ad5981915e4e72685bde9edc2",
+    "TransDoc-Linux-x64-0.2.1-r11.tar.gz": "a87860673c155e04cd1e5e2c08a635d952ad7b08de9cc2b10a4fd3a3393f2955"
+  }
+}

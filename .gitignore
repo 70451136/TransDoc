@@ -1,0 +1,6 @@
+config/
+backups/
+activation.json
+*.log
+*.zip
+*.tar.gz

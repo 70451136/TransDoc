@@ -1,0 +1,35 @@
+name: Validate distribution
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  files:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify public files and immutable images
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, re
+          root = pathlib.Path('.').resolve()
+          record = json.loads(pathlib.Path('distribution.json').read_text())
+          for role in ('runtime', 'web'):
+              assert re.fullmatch(r'transdoc520/transdoc-(runtime|web)@sha256:[a-f0-9]{64}', record[role])
+          for name, digest in record['sha256'].items():
+              target = (root / name).resolve()
+              assert target.is_relative_to(root) and not pathlib.Path(name).is_absolute()
+              if name.endswith('.tar.gz'):
+                  continue  # Release asset, not committed in Git.
+              assert hashlib.sha256(target.read_bytes()).hexdigest() == digest, name
+          assert not pathlib.Path('config').exists()
+          assert not pathlib.Path('services').exists()
+          assert not pathlib.Path('packages').exists()
+          assert not list(pathlib.Path('deploy').rglob('*.py'))
+          print('Public file checksums and pinned image references passed')
+          PY
+      - name: Check Linux installer syntax
+        run: |
+          for file in deploy/*.sh; do bash -n "$file"; done
