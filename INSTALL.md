@@ -2,12 +2,15 @@
 
 从本仓库 Releases 或官网发行入口下载安装包。仓库首页的源码 ZIP 是部署资料，**不是 Windows 离线安装包**。
 
-**想直接复制命令？请用 [下载并开始安装](README.md#下载并开始安装)**：Windows 下载、校验后启动一键安装；Linux 下载、校验并准备环境，再按下文手动激活。两种入口均固定 0.2.1-r11 的附件与 SHA256，不会覆盖已有目录。已有安装请继续原目录的安装器，不要反复创建新目录或删除数据卷。
+本版为 **0.3.0-r13**，提供 Windows x64、Linux universal（x64 / ARM64）、macOS universal（Intel / Apple Silicon）三个独立离线安装包。包含通用翻译功能和可编辑 PDF，DWG 本机执行器另行适配。每包附安装说明，Linux/macOS 的详细步骤见 [Linux](LINUX-OFFLINE.md) 与 [macOS](MACOS-OFFLINE.md)。PDF 能力、资源要求和源码入口见 [PDF 与升级说明](PDF.md)。
+
+**想直接复制命令？请用公开仓库首页的下载命令**：Windows 下载、校验后启动一键安装；Linux 下载、校验并准备环境，再按下文手动激活。发行页提供固定附件与 SHA256。已有安装请更新原目录的发行文件后运行新版安装器，不要反复注册新节点或删除数据卷。
 
 ## 准备
 
 - Windows 10/11 x64：硬件虚拟化、WSL2、Docker Desktop Linux 容器。使用者须确认 Docker Desktop 适用许可，管理员授权和必要重启不能跳过。Windows Server 请使用受支持的 Linux 虚拟机。
-- Linux x86_64：Docker Engine 与 Compose v2。自动安装入口适用于 Ubuntu 22.04/24.04/26.04、Debian 12/13，其他发行版先按 Docker 官方文档安装。
+- Linux x86_64 / ARM64：Docker Engine 29+、containerd 镜像存储与 Compose v2，先按 Docker 官方文档安装。
+- macOS Intel / Apple Silicon：对应架构 Docker Desktop，启用 containerd 镜像存储，参阅包内 README。不要使用 sudo 启动安装器。
 - 预留镜像、数据库、文档与备份空间；实际要求随文件量和模型部署变化。镜像不包含本地大模型。
 - 允许访问授权中心 `https://doc.abcfanyi.com` 及自己选择的模型服务。离线 ZIP 省去应用镜像拉取，不代表首次授权和 Docker 安装无需联网。
 
@@ -25,13 +28,13 @@
 
 ## Linux：Docker 安装
 
-解压 Linux Docker 包到专用目录，在该目录执行：
+先准备可用 Docker，将 Linux 离线包解压到专用目录，在该目录执行：
 
 ```bash
-sudo bash install.sh --prepare --install-engine --admin-email owner@example.com
+sudo bash install.sh --prepare --admin-email owner@example.com
 ```
 
-已有 Docker 可省略 `--install-engine`。准备阶段生成配置并等待 PostgreSQL / Redis 健康，不启动翻译处理。**当前 Linux 入口采用手动授权**：把节点标识提交到主站「部署授权」，将对应凭证保密保存为当前目录 `activation.json`，然后：
+本版离线安装器不会下载安装 Docker。准备阶段生成配置并等待 PostgreSQL / Redis 健康，不启动翻译处理。**当前 Linux / macOS 入口采用手动授权**：把节点标识提交到主站「部署授权」，将对应凭证保密保存为当前目录 `activation.json`，然后（macOS 去掉 sudo）：
 
 ```bash
 sudo bash install.sh --activate

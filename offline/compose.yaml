@@ -1,0 +1,92 @@
+name: transdoc-licensed
+
+x-app: &app
+  image: ${TRANSDOC_RUNTIME_IMAGE:?Use the approved immutable runtime image digest}
+  env_file: [./config/node.env]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  # Same address on Docker Desktop and Linux Engine (20.10+); no port is published.
+  extra_hosts: [host.docker.internal:host-gateway]
+  volumes:
+    - storage:/app/storage-data
+    - ./config/authority-public.pem:/run/transdoc/authority-public.pem:ro
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: transdoc
+      POSTGRES_USER: transdoc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run preparation first}
+    volumes: [database:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U transdoc -d transdoc']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  redis:
+    image: redis:7.4-alpine
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Run preparation first}
+    command: [redis-server, --appendonly, 'yes', --requirepass, '${REDIS_PASSWORD}']
+    volumes: [cache:/data]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH=$$REDIS_PASSWORD redis-cli ping | grep -qx PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  storage-init:
+    image: ${TRANSDOC_RUNTIME_IMAGE}
+    user: '0:0'
+    command: [python, -c, 'import os; os.chown("/storage", 65532, 65532)']
+    volumes: [storage:/storage]
+    restart: 'no'
+  migrate:
+    <<: *app
+    command: [python, -m, alembic, -c, services/api/alembic.ini, upgrade, head]
+    restart: 'no'
+  backup:
+    image: postgres:17-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [./backups:/backups]
+    command: [sh, -ec, 'umask 077; target="/backups/$${BACKUP_FILE:?Missing backup filename}"; test ! -e "$$target"; pg_dump -h postgres -U transdoc -d transdoc -Fc -f "$$target.partial"; pg_restore --list "$$target.partial" > /dev/null; mv "$$target.partial" "$$target"']
+    restart: 'no'
+  license-agent:
+    <<: *app
+    command: [python, -m, services.api.src.modules.deployment_licenses.node_agent]
+    volumes:
+      - storage:/app/storage-data
+      - ./config/authority-public.pem:/run/transdoc/authority-public.pem:ro
+      - ./config/activation.token:/run/transdoc/activation.token:ro
+  api:
+    <<: *app
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready',timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+  worker:
+    <<: *app
+    command: [python, -m, dramatiq, services.worker.src.broker, --processes, '2', --threads, '4']
+  dispatcher:
+    <<: *app
+    command: [python, -m, services.worker.src.outbox_loop]
+  web:
+    image: ${TRANSDOC_WEB_IMAGE:?Use the approved immutable web image digest}
+    security_opt: [no-new-privileges:true]
+    ports: ['${TRANSDOC_HTTP_BIND:-127.0.0.1}:${TRANSDOC_HTTP_PORT:-8080}:8080']
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, 'http://127.0.0.1:8080/']
+      interval: 10s
+      timeout: 5s
+      retries: 18
+    restart: unless-stopped
+
+volumes:
+  database:
+  cache:
+  storage:

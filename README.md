@@ -8,9 +8,11 @@
 
 这是 **Docker 独立部署版的发行仓库**，不是主站源码仓库。仓库仅提供安装脚本、Compose、使用文档及发行附件；业务源码不在此仓库公开。上方为品牌插画，不是应用截图。
 
-当前为 **0.2.1-r11 预发布测试版**。请先阅读 [版本说明、验证范围及已知安全告警](RELEASE-NOTES.md)。
+当前为 **0.3.0-r13 预发布测试版**。请先阅读 [版本说明、验证范围及已知安全告警](RELEASE-NOTES.md)。
 
 ## 核心能力
+
+本版包含可编辑 PDF 引擎、字体与布局资源，支持纯译文、交替页对照及修订后重构，详见 [PDF / AGPL 源码与升级说明](PDF.md)。DWG 本机执行器单独适配，本包不开放 DWG 上传。
 
 - **文件翻译与交付**：Office 文档结构解析、标签与占位符保护、格式写回，支持译文和原译对照交付。复杂排版和重要内容仍建议人工复核。
 - **翻译 QA**：检查漏译、术语、数字和一致性；支持 Trados / SDLXLIFF 等双语文件检查。
@@ -24,12 +26,13 @@
 | 环境 | 下载与启动 |
 | --- | --- |
 | Windows 10/11 x64 | 下载 Windows ZIP，完整解压，双击 `Start.cmd`，按菜单一键继续 |
-| Linux x86_64 | 下载 Linux Docker 包，按 [安装说明](INSTALL.md) 准备环境和激活 |
+| Linux x86_64 / ARM64 | 下载 Linux universal 离线包，按 [Linux 说明](LINUX-OFFLINE.md) 安装 |
+| macOS Intel / Apple Silicon | 下载 macOS universal ZIP，双击 Start.command，见 [macOS 说明](MACOS-OFFLINE.md) |
 | 自有云服务器 | 使用相同 Linux 包，另行配置域名、HTTPS、访问控制和备份 |
 
 安装器负责数据库与 Redis、随机密码、迁移、健康检查和服务启动。默认工作台只监听本机 `127.0.0.1:8080`，不会发布数据库端口。不要只运行一个 API 镜像，也不要把开发 Compose 当成发行配置。
 
-发布镜像：`transdoc520/transdoc-runtime`、`transdoc520/transdoc-web`。两者必须来自同一发行版本；安装包使用真实 SHA256 摘要固定镜像。当前目标为 `linux/amd64`；Windows 通过 Docker Desktop 的 Linux 容器运行，不是 Windows 容器，也未承诺 ARM64 支持。
+发布镜像：`transdoc520/transdoc-runtime`、`transdoc520/transdoc-web`。两者必须来自同一发行版本；安装包使用真实 SHA256 摘要固定镜像。提供 `linux/amd64` 和 `linux/arm64` 原生镜像；Windows 使用 x64 Linux 容器，macOS 使用对应 Intel/Apple Silicon 的 Linux 容器。
 
 ## 下载并开始安装
 
@@ -37,19 +40,19 @@
 
 ### Windows：下载、校验并自动安装
 
-在 **Windows PowerShell 5.1 或 PowerShell 7** 中粘贴执行，不要粘贴到 CMD。目标目录为当前用户的 `%LOCALAPPDATA%\TransDoc\Packages\0.2.1-r11`；默认位于 C 盘。如需把安装包和配置放到 D 盘，可先将 `$target` 改为专用目录（例如 `'D:\TransDocNode'`）；这不会迁移 Docker 的镜像和数据盘。
+在 **Windows PowerShell 5.1 或 PowerShell 7** 中粘贴执行，不要粘贴到 CMD。目标目录为当前用户的 `%LOCALAPPDATA%\TransDoc\Packages\0.3.0-r13`；默认位于 C 盘。如需把安装包和配置放到 D 盘，可先将 `$target` 改为专用目录（例如 `'D:\TransDocNode'`）；这不会迁移 Docker 的镜像和数据盘。
 
 ```powershell
 & {
     $ErrorActionPreference = 'Stop'
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-    $release = '0.2.1-r11'
+    $release = '0.3.0-r13'
     $target = Join-Path $env:LOCALAPPDATA "TransDoc\Packages\$release"
     if (Test-Path -LiteralPath $target) { throw "Directory exists: $target . Run its Start.cmd to continue; do not delete config or Docker volumes." }
     $zip = Join-Path ([IO.Path]::GetTempPath()) ("TransDoc-" + [Guid]::NewGuid().ToString('N') + '.zip')
     $url = "https://github.com/70451136/TransDoc/releases/download/v$release/TransDoc-Windows-x64-$release.zip"
     Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $zip
-    $expected = '2f48b52e034cd32c12c5b5b9d96f5a7fd044f7887af5970028412d1ee7715a99'
+    $expected = '3b51e5988aa363051e0e85de2619989f7ced92c03389fb06b05d32ae8d0182f9'
     if ((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'SHA256 mismatch; installation stopped.' }
     $stage = $target + '.partial-' + [Guid]::NewGuid().ToString('N')
     Expand-Archive -LiteralPath $zip -DestinationPath $stage
@@ -60,17 +63,17 @@
 
 随后在弹出的安装控制台填写管理员邮箱；已有安装按提示复用原身份。程序自动准备 PostgreSQL / Redis、登记或复用授权、执行迁移并启动服务，就绪后打开本地工作台。缺少 Docker 时仍需确认其官方许可，按提示处理 UAC、WSL2 或重启；不是无提示静默安装。
 
-重复执行不会覆盖已有目录。如已下载或安装，直接双击上述目录的 `Start.cmd` 继续；修复/重装用菜单 `3`，不要删除 `config`、备份或 Docker 数据卷。ZIP 约 403 MiB，下载失败请检查 GitHub 网络，**不要跳过 SHA256 校验**。命令先在临时目录解压；中断可留下 `.partial-*` 目录，但不会阻止重新执行。已有正式目录却缺少 `Start.cmd` 时先核对内容，不要删除目录或强行覆盖。
+重复执行不会覆盖已有目录。如已下载或安装，直接双击上述目录的 `Start.cmd` 继续；修复/重装用菜单 `3`，不要删除 `config`、备份或 Docker 数据卷。ZIP 约 936 MiB，下载失败请检查 GitHub 网络，**不要跳过 SHA256 校验**。命令先在临时目录解压；中断可留下 `.partial-*` 目录，但不会阻止重新执行。已有正式目录却缺少 `Start.cmd` 时先核对内容，不要删除目录或强行覆盖。
 
 ### Linux：下载、校验并准备 Docker 环境
 
-在 **Linux x86_64 的 Bash 终端**执行；需有 `curl`、`tar`、`sha256sum` 和 `sudo`。自动安装 Docker 支持 Ubuntu 22.04/24.04/26.04、Debian 12/13；已有可用引擎会复用。默认目录为 `$HOME/TransDoc-0.2.1-r11`，不要在 Windows PowerShell 中执行这一段。
+在 **Linux x86_64 或 ARM64 的 Bash 终端**执行；需有 `curl`、`tar`、`sha256sum` 和 `sudo`。先安装并启动 Docker Engine 29+ 与 Compose v2，启用 containerd 镜像存储；已有可用引擎会复用。默认目录为 `$HOME/TransDoc-0.3.0-r13`，不要在 Windows PowerShell 中执行这一段。
 
 ```bash
 (
     set -eu
     umask 077
-    release='0.2.1-r11'
+    release='0.3.0-r13'
     target="$HOME/TransDoc-$release"
     if [ -e "$target" ]; then
         printf 'Directory exists: %s . Continue from the original directory; do not delete config or volumes.\n' "$target" >&2
@@ -80,15 +83,15 @@
     test -n "$admin_email"
     stage="$(mktemp -d "$HOME/TransDoc-$release.partial.XXXXXX")"
     cd "$stage"
-    archive="TransDoc-Linux-x64-$release.tar.gz"
+    archive="TransDoc-Linux-universal-$release.tar.gz"
     curl --fail --location --proto '=https' --proto-redir '=https' --tlsv1.2 \
         "https://github.com/70451136/TransDoc/releases/download/v$release/$archive" -o "$archive"
-    printf '%s  %s\n' 'a87860673c155e04cd1e5e2c08a635d952ad7b08de9cc2b10a4fd3a3393f2955' "$archive" | sha256sum -c -
+    printf '%s  %s\n' '19699a44c1c1eff5580d8fb2948e327c7652994e6582df220772cd3939f61680' "$archive" | sha256sum -c -
     tar -xzf "$archive"
     mv -T --no-clobber "$stage" "$target"
     test ! -d "$stage" || { printf 'Target appeared during download; stopped without overwriting.\n' >&2; exit 1; }
     cd "$target"
-    sudo bash install.sh --prepare --install-engine --admin-email "$admin_email"
+    sudo bash install.sh --prepare --admin-email "$admin_email"
 )
 ```
 
@@ -97,12 +100,24 @@
 **Linux 当前版本准备完成后仍需手动授权，不等于应用已安装就绪。** 将输出的节点标识提交主站「部署授权」，把对应完整凭证私密保存为安装目录内的 `activation.json`，然后继续：
 
 ```bash
-cd "$HOME/TransDoc-0.2.1-r11"
+cd "$HOME/TransDoc-0.3.0-r13"
 chmod 600 activation.json
 sudo bash install.sh --activate
 ```
 
 若改过 `target`，后续 `cd` 也使用那个目录。默认页面为 `http://localhost:8080`，只监听本机；云服务器上的 localhost 指服务器自身，远程访问需另行配置 SSH 转发或 HTTPS 反向代理，不要直接暴露数据库端口。
+
+### macOS：Intel 与 Apple Silicon
+
+下载 [TransDoc-macOS-universal-0.3.0-r13.zip](https://github.com/70451136/TransDoc/releases/download/v0.3.0-r13/TransDoc-macOS-universal-0.3.0-r13.zip)，使用 `shasum -a 256` 核对：
+
+```text
+1cb5b75b6ec1c5772ef944f85f537d4b2611638bc9f866c5e7fbd624626a012b
+```
+
+先安装并启动符合机器架构的 Docker Desktop，完整解压后双击 `Start.command`。如果系统要求，请从终端运行 `bash start.sh`。macOS 不使用 sudo；准备后与 Linux 一样手动授权，再启动服务。包内已包含两个架构的四个运行镜像，自动选择本机架构。详见 [macOS 安装与保留数据升级](https://github.com/70451136/TransDoc/blob/main/MACOS-OFFLINE.md)。
+
+三端包均无需拉取应用镜像或 PDF 字体模型；首次安装 Docker、使用云模型以及授权续签仍可能联网。AGPL PDF 对应源码与许可按要求提供，见 [源码与许可说明](https://github.com/70451136/TransDoc/blob/main/SOURCE-NOTICE.md)。
 
 ## 免费与授权
 

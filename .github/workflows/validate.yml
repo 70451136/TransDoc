@@ -32,4 +32,4 @@ jobs:
           PY
       - name: Check Linux installer syntax
         run: |
-          for file in deploy/*.sh; do bash -n "$file"; done
+          for file in deploy/*.sh offline/*.sh offline/*.command; do bash -n "$file"; done
